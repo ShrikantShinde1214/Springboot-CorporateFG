@@ -1,0 +1,54 @@
+package com.shri.main.model;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+
+@Entity
+@Data
+public class Admin {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@Column(name = "login_id", unique = true, nullable = false)
+	private String loginId;
+	@Column(unique = true)
+	private String username;
+	@Column(unique = true)
+	private String email;
+	private String password;
+
+	@Column(name = "is_login")
+	private Boolean isLogin;
+
+	@Column(name = "login_client_ip")
+	private String loginIp;
+
+//	@Column(name = "login_at")
+//	private LocalDateTime loginAt;
+//
+//	@Column(name = "logout_at")
+//	private LocalDateTime logoutAt;
+	
+	@Column(name = "login_at", columnDefinition = "DATETIME")
+	private LocalDateTime loginAt;
+
+	@Column(name = "logout_at", columnDefinition = "DATETIME")
+	private LocalDateTime logoutAt;
+
+	@Column(name = "session_key")
+	private String sessionKey;
+	
+    @Column(name = "dob")
+    private LocalDate dob;
+
+    @Column(name = "last_birthday_wished_at")
+    private LocalDate lastBirthdayWishedAt;
+	
+}

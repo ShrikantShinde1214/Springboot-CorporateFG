@@ -1,0 +1,171 @@
+package com.shri.main.controller;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.shri.main.dao.AdminRepository;
+import com.shri.main.model.Admin;
+import com.shri.main.security.Argon2PasswordUtil;
+import com.shri.main.service.EmailService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+@Controller
+public class AdminLoginController {
+
+    @Autowired
+    private AdminRepository adminRepo;
+
+    @Autowired
+    private EmailService emailService;
+
+    @GetMapping("/getAllAdmins")
+    @ResponseBody
+    public List<Admin> getAllAdmins() {
+        return adminRepo.findAll();
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestParam String username,
+                        @RequestParam String password,
+                        Model model,
+                        HttpSession session,
+                        HttpServletRequest request) {
+
+        Optional<Admin> userOpt = adminRepo.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            model.addAttribute("error", "Invalid Username or Password.");
+            return "login";
+        }
+
+        Admin admin = userOpt.get();
+
+        if (!Argon2PasswordUtil.verifyPassword(password, admin.getPassword())) {
+            model.addAttribute("error", "Invalid Username or Password.");
+            return "login";
+        }
+
+        if (admin.getIsLogin()) {
+            model.addAttribute("error", "User is already logged in, Multiple logins are not allowed.");
+            return "login";
+        }
+
+        // Generate 6-digit OTP
+        int otp = (int) (Math.random() * 900000) + 100000;
+
+        // Save OTP, time, and admin in session
+        session.setAttribute("otp", otp);
+        session.setAttribute("otpTime", System.currentTimeMillis()); // Save generation time
+        session.setAttribute("admin", admin);
+
+        // Send OTP via email
+        emailService.sendOtpEmail(admin.getEmail(), otp);
+
+        return "otp-verification";
+    }
+
+    @PostMapping("/verify-otp")
+    public String verifyOtp(@RequestParam String otp,
+                            HttpSession session,
+                            Model model,
+                            HttpServletRequest request) {
+
+        Object expectedOtpObj = session.getAttribute("otp");
+        Object otpTimeObj = session.getAttribute("otpTime");
+        Admin admin = (Admin) session.getAttribute("admin");
+
+        if (expectedOtpObj == null || otpTimeObj == null || admin == null) {
+            model.addAttribute("error", "Session expired. Please login again.");
+            return "login";
+        }
+
+        // Check if OTP is expired (3 minutes)
+        long otpGeneratedTime = (long) otpTimeObj;
+        long currentTime = System.currentTimeMillis();
+        long elapsedMillis = currentTime - otpGeneratedTime;
+
+        if (elapsedMillis > 3 * 60 * 1000) { // 3 minutes = 180000 milliseconds
+            model.addAttribute("error", "OTP has been expired, please resend the OTP.");
+            return "otp-verification";
+        }
+
+        String expectedOtp = expectedOtpObj.toString();
+
+        if (!expectedOtp.equals(otp)) {
+            model.addAttribute("error", "Invalid OTP. Please try again.");
+            return "otp-verification";
+        }
+
+        // OTP is correct — mark login complete
+        admin.setIsLogin(true);
+        admin.setLoginIp(request.getRemoteAddr());
+        admin.setLoginAt(LocalDateTime.now());
+        admin.setLogoutAt(LocalDateTime.now());
+        admin.setSessionKey(UUID.randomUUID().toString());
+        adminRepo.save(admin);
+
+        session.removeAttribute("otp");
+        session.removeAttribute("otpTime");
+        session.setAttribute("user", admin); // mark as logged in
+
+        return "dashboard";
+    }
+
+    @GetMapping("/verify-otp")
+    public String showOtpPage(HttpSession session, Model model) {
+        Admin admin = (Admin) session.getAttribute("admin");
+        if (admin == null) {
+            model.addAttribute("error", "Session expired. Please login again.");
+            return "login";
+        }
+        return "otp-verification";
+    }
+
+    @GetMapping("/resend-otp")
+    public String resendOtp(HttpSession session, RedirectAttributes redirectAttributes) {
+        Admin admin = (Admin) session.getAttribute("admin");
+
+        if (admin != null) {
+            int newOtp = (int) (Math.random() * 900000) + 100000;
+            session.setAttribute("otp", newOtp);
+            session.setAttribute("otpTime", System.currentTimeMillis()); // update OTP time
+            emailService.sendOtpEmail(admin.getEmail(), newOtp);
+
+            redirectAttributes.addFlashAttribute("message", "A new OTP has been sent to your email.");
+            return "redirect:/verify-otp";
+        }
+
+        redirectAttributes.addFlashAttribute("error", "Session expired. Please login again.");
+        return "redirect:/login";
+    }
+
+    @PostMapping("/keepAlive")
+    @ResponseBody
+    public String keepSessionAlive(HttpSession session) {
+        session.setAttribute("lastActive", System.currentTimeMillis());
+        return "OK";
+    }
+
+    @PostMapping("/autoLogout")
+    @ResponseBody
+    public void autoLogout(HttpSession session) {
+        Admin admin = (Admin) session.getAttribute("user");
+        if (admin != null) {
+            admin.setIsLogin(false);
+            adminRepo.save(admin);
+        }
+        session.invalidate();
+    }
+}

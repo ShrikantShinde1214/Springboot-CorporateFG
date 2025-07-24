@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html xmlns="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="ISO-8859-1">
+	<title>Update-Student</title>
+	<link rel="icon" href="images/fgimage.jpeg" type="image/jpeg">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link rel="stylesheet" href="/CSS Code/UpdateStudent.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+
+<body style="background: linear-gradient(to right, #f7c6f1, #c2e9fb, #a7d8d2);">
+
+	<div class="cont container my-5" style="max-width: 900px;">
+		<center>
+			<h2 class="mb-4">
+				<i class="fas fa-user-graduate icon text-info"></i>&nbsp; Update Student &nbsp;
+				<i class="fas fa-user-graduate icon text-info"></i>
+			</h2>
+		</center>
+
+		<a id="btl1" th:href="@{/list}" class="btn btn-link mb-3">Back to list</a>
+		<hr />
+		<!--NEW Changes added by Shrikant Shinde for prevent the email sent once the student updated  START HERE-->
+		<div th:if="${errorMessage}" class="alert alert-danger" style="text-align: center; margin-bottom: 20px;">
+		    <p th:text="${errorMessage}"></p>
+		</div>
+		<!--NEW Changes added by Shrikant Shinde for prevent the email sent once the student updated  END HERE-->
+		<form id="emailForm" th:action="@{/saveStudent}" th:object="${student}" method="POST"
+			onsubmit="return validateForm()">
+
+			<div class="row g-4">
+				<!-- Left Section: Basic Student Info -->
+				<div class="col-md-6">
+					<div class="card border-primary shadow-sm">
+						<div class="card-header bg-primary text-white">
+							Student Basic Details
+						</div>
+						<div class="card-body">
+							<label><b>Enter Student Name:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{name}" placeholder="Enter Name" class="form-control mb-3"
+								id="names" onkeypress="return isLetter(event)" />
+
+							<label><b>Enter Student Email:</b><span class="text-danger">*</span></label>
+							<input type="email" th:field="*{email}" placeholder="Enter Email" class="form-control mb-3"
+								id="email" />
+
+							<label><b>Enter Student MobileNo:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{mobile}" placeholder="Enter Mobile" class="form-control mb-3"
+								id="mobile" onkeypress="return isNumber(event)" />
+							<label><b>Enter Student BatchNo:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{batchNo}" placeholder="Enter Batch-No"
+								class="form-control mb-3" id="batchNo" oninput="validateBatchNo(this)" />
+
+							<label><b>Enter Student Admission Date: (Format: YYYY-MM-DD)</b><span class="text-danger">*</span></label>
+							<input type="date" th:field="*{admissionDate}" placeholder="- Select Student DOJ -"
+								class="form-control mb-3" id="DOA" min="2022-01-01" />
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card border-success shadow-sm">
+						<div class="card-header bg-success text-white">
+							Academic & Administrative Details
+						</div>
+						<div class="card-body">
+							<label><b>Enter Student Total Fees:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{totalFees}" placeholder="Enter Total Fees"
+								class="form-control mb-3" id="tFees" onkeypress="return isNumber(event)" readonly />
+
+							<label><b>Enter Student Paid Fees:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{paidFees}" placeholder="Enter Paid Fees"
+								class="form-control mb-3" id="pFees" onkeypress="return isNumber(event)" />
+
+							<label><b>Enter Student Created-By:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{createdBy}" placeholder="Created By"
+								class="form-control mb-3" id="createdBy" onkeypress="return isLetter(event)" />
+
+							<label><b>Enter Student Modified-By:</b><span class="text-danger">*</span></label>
+							<input type="text" th:field="*{modifiedBy}" placeholder="Modified By"
+								class="form-control mb-3" id="modifiedBy" onkeypress="return isLetter(event)" />
+
+							<label><b>Enter Student Course:</b><span class="text-danger">*</span></label>
+							<select th:field="*{course}" class="form-control mb-3" id="course">
+								<option value="">-Select Course-</option>
+								<option value="Java Full Stack Developer">Java Full Stack Developer</option>
+								<option value="Software Testing">Software Testing</option>
+								<option value="Angular Developer">Angular Developer</option>
+								<option value="React Developer">React Developer</option>
+								<option value="SQL, PLSQL Developer">SQL, PLSQL Developer</option>
+								<option value="Data Science">Data Science</option>
+								<option value=".Net Developer">.Net Developer</option>
+								<option value="Devops Engineer">Devops Engineer</option>
+								<option value="English Speaking">English Speaking</option>
+							</select>
+
+							<label><b>Enter Our Comments:</b><span class="text-danger">*</span></label>
+							<textarea th:field="*{comments}" placeholder="Comments" class="form-control mb-3"
+								id="comment" rows="3"></textarea>
+
+							<label><b>Enter Student Qualification:</b><span class="text-danger">*</span></label>
+							<select th:field="*{highestQualification}" class="form-control mb-3" id="qualification">
+								<option value="">-Select Qualification-</option>
+								<option value="B.Tech in Computer Engineering">B.Tech in Computer Engineering</option>
+								<option value="B.Tech in Information Technology">B.Tech in Information Technology
+								</option>
+								<option value="BCA">BCA (Bachelor of Computer Applications)</option>
+								<option value="BSC in Information Technology">BSC in Information Technology</option>
+								<option value="BSC in Computer Science">BSC in Computer Science</option>
+								<option value="BE in Computer Engineering">BE in Computer Engineering</option>
+								<option value="BE in Civil Engineering">BE in Civil Engineering</option>
+								<option value="BE in Mechanical Engineering">BE in Mechanical Engineering</option>
+								<option value="BE in E&TC Engineering">BE in E&TC Engineering</option>
+								<option value="BE in Electrical Engineering">BE in Electrical Engineering</option>
+								<option value="BE in Information Technology">BE in Information Technology</option>
+								<option value="M.Tech in Computer Engineering">M.Tech in Computer Engineering</option>
+								<option value="M.Tech in Information Technology">M.Tech in Information Technology
+								</option>
+								<option value="MCA">MCA (Master of Computer Applications)</option>
+								<option value="MSC in Computer Science">MSC in Computer Science</option>
+								<option value="MSC in Information Technology">MSC in Information Technology</option>
+								<option value="Diploma in Computer Engineering">Diploma in Computer Engineering</option>
+								<option value="Diploma in Information Technology">Diploma in Information Technology
+								</option>
+								<option value="Diploma in Civil Engineering">Diploma in Civil Engineering</option>
+								<option value="Diploma in Mechanical Engineering">Diploma in Mechanical Engineering
+								</option>
+								<option value="Diploma in E&TC">Diploma in E&TC</option>
+								<option value="Diploma in Electrical Engineering">Diploma in Electrical Engineering</option>
+								<option value="MBA">MBA</option>
+								<option value="Other">Other</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="text-center mt-4">
+				<button class="btn btn-info me-2" type="button" onclick="showPasswordModal()">
+					<i class="fas fa-edit"></i> Update Student
+				</button>
+				<input type="hidden" th:field="*{id}">
+			</div>
+		</form>
+
+		<hr />
+		<a id="btl2" th:href="@{/list}" class="btn btn-link">Back to list</a>
+	</div>
+
+	<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="passwordModalLabel">Security Password</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Please enter the security password to proceed with the update:</p>
+					<input type="password" id="passwordInput" class="form-control" placeholder="Enter Password" />
+					<p id="passwordError" class="text-danger" style="display:none;">Incorrect password. Please try
+						again.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary" onclick="validatePassword()">Submit</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		flatpickr("#DOA", {
+			dateFormat: "Y-m-d",
+			placeholder: "Select Student DOJ",
+			allowInput: true,
+			disableMobile: true
+		});
+
+
+		function validateForm() {
+			var name = document.getElementById("names").value;
+			var email = document.getElementById("email").value;
+			var mobile = document.getElementById("mobile").value;
+			var batchNo = document.getElementById("batchNo").value;
+			var doa = document.getElementById("DOA").value;
+			var tFees = document.getElementById("tFees").value;
+			var pFees = document.getElementById("pFees").value;
+			var createdBy = document.getElementById("createdBy").value;
+			var modifiedBy = document.getElementById("modifiedBy").value;
+			var course = document.getElementById("course").value;
+			var comment = document.getElementById("comment").value;
+			var qualification = document.getElementById("qualification").value;
+
+			if (name.trim() === "") {
+				alert("Please enter a name.");
+				return false;
+			}
+			if (name.length < 3) {
+				alert("Please enter a proper name with at least three characters.");
+				return false;
+			}
+			if (name.startsWith("Q")) {
+				alert("Names starting with 'Q' are not allowed.");
+				return false;
+			}
+			if (email.trim() === "") {
+				alert("Email cannot be blank.");
+				return false;
+			}
+			if (mobile.trim() === "" || mobile.length !== 10) {
+				alert("Please enter a 10-digit mobile number.");
+				return false;
+			}
+			if (doa.trim() === "") {
+				alert("Please enter the date of admission.");
+				return false;
+			}
+			if (tFees.trim() === "" || tFees == 0.0) {
+				alert("Please enter the total fees.");
+				return false;
+			}
+			if (pFees.trim() === "" || pFees == 0.0) {
+				alert("Please enter the paid fees.");
+				return false;
+			}
+			if (pFees > 45000) {
+				alert("The Paid Fees cannot exceed the Total Fees, which is 45,000.");
+				return false;
+			}
+			if (createdBy.trim() === "") {
+				alert("CreatedBy cannot be blank.");
+				return false;
+			}
+			if (modifiedBy.trim() === "") {
+				alert("ModifiedBy cannot be blank.");
+				return false;
+			}
+			if (course.trim() === "") {
+				alert("Please enter the course.");
+				return false;
+			}
+			if (comment.trim() === "") {
+				alert("Please enter a comment.");
+				return false;
+			}
+			if (qualification.trim() === "") {
+				alert("Please select qualification.");
+				return false;
+			}
+		}
+
+		function isLetter(evt) {
+			var charCode = evt.which ? evt.which : evt.keyCode;
+			if ((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)
+				|| charCode === 8 || charCode === 9 || charCode === 13 || charCode === 27 || charCode === 32) {
+				return true;
+			} else {
+				alert('Please enter letter only');
+				return false;
+			}
+		}
+
+
+
+		function isNumber(evt) {
+			var charCode = evt.which ? evt.which : evt.keyCode;
+			if ((charCode >= 48 && charCode <= 57) || charCode === 8 || charCode === 9 || charCode === 13 || charCode === 27) {
+				return true;
+			} else {
+				alert('Please enter digits only');
+				return false;
+			}
+		}
+		function validateBatchNo(input) {
+			const value = input.value;
+			const pattern = /^[a-zA-Z0-9]*$/;
+
+			if (!pattern.test(value)) {
+				alert("Only letters and digits are allowed.");
+				input.value = value.replace(/[^a-zA-Z0-9]/g, "");
+				return;
+			}
+
+			if (value.length > 0 && !/^([Bb])/.test(value)) {
+				alert("Batch No must start with 'B' or 'b'.");
+				input.value = "";
+			}
+		}
+		document.getElementById('emailForm').addEventListener('submit', function (event) {
+			var emailInput = document.getElementById('email');
+			var emailValue = emailInput.value;
+			var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+			if (!emailRegex.test(emailValue)) {
+				alert('Please enter proper mail -> eg: abc@gmail.com');
+				event.preventDefault();
+			}
+		});
+		document.getElementById("DOA").addEventListener("change", function () {
+			const selectedDate = new Date(this.value);
+			const minDate = new Date("2022-01-01");
+
+			if (selectedDate < minDate) {
+				alert("Our FG Infotech is established in 2022, so dates before 2022 are not allowed.");
+				return false;
+			}
+		});
+	</script>
+	<script src="/JS Code/UpdateStudentSecure.js"></script>
+	<!--<script>
+	    let timer;
+	    function resetTimer() {
+	        clearTimeout(timer);
+	        timer = setTimeout(() => {
+	            window.location.href = "/?sessionExpired=true";
+	        }, 300000);
+	    }
+
+	    document.onload = resetTimer();
+	    document.onmousemove = resetTimer;
+	    document.onkeypress = resetTimer;
+	    document.onclick = resetTimer;
+	</script>-->
+	<!-- Auto Logout Script -->
+		<script>
+			function resetTimer() {
+				clearTimeout(timer);
+
+				// Optional: keep session alive on user activity
+				fetch('/keepAlive', { method: 'POST' });
+
+				timer = setTimeout(() => {
+					fetch('/autoLogout', { method: 'POST' }).then(() => {
+						window.location.href = "/?sessionExpired=true";
+					});
+				}, 300000);
+			}
+
+		</script>
+		<!-- Auto Logout End -->
+
+</body>
+
+</html>

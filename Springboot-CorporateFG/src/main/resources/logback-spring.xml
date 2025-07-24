@@ -1,0 +1,31 @@
+<configuration>
+    <!-- Console Appender: Logs to the Console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender: Logs to Project Directory -->
+    <appender name="PROJECT_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/FG_Infotech-Logs.txt</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender: Logs to D:/logs Folder -->
+    <appender name="D_DRIVE_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>D:/FG_Infotech/logs/application-logs.txt</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger: Includes All Log Levels -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="PROJECT_FILE" />
+        <appender-ref ref="D_DRIVE_FILE" />
+    </root>
+</configuration>

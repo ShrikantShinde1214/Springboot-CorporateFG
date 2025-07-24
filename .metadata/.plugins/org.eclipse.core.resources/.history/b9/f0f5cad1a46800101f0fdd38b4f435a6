@@ -1,0 +1,58 @@
+# Application settings
+spring.application.name=Springboot-CorporateFG
+server.port=8787
+
+# MySQL database configuration (uncomment and update if using MySQL)
+# Uncomment and set the properties for MySQL if you want to use it for your main database.
+# spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# spring.datasource.url=jdbc:mysql://localhost:3306/SPRINGBOOTCORPORATEFG
+# spring.datasource.username=root
+# spring.datasource.password=root
+
+# Set the root logging level
+logging.level.root=INFO
+
+# Set package-specific logging levels
+logging.level.com.example=DEBUG
+
+# H2 Console Configuration
+#spring.h2.console.enabled=true
+#spring.h2.console.path=/h2-console
+#spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+
+spring.datasource.url=jdbc:mysql://sql8.freesqldatabase.com:3306/sql8791710
+spring.datasource.username=sql8791710
+spring.datasource.password=t5zNq47H5H
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# Hibernate and JPA related settings (for MySQL compatibility)
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+
+#
+app.name=Springboot-CorporateFG
+app.version=v3.3.12
+
+
+# Mail config
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=future.growing.infotech@gmail.com
+spring.mail.password=ricf jwwt udqa zxjf
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+
+
+
+server.servlet.session.timeout=5m
+
+
+#new configrautaion
+spring.mail.properties.mail.smtp.starttls.required=false
+spring.mail.properties.mail.smtp.ssl.trust=*
+
+
+
+
