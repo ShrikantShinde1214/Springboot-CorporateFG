@@ -167,6 +167,12 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			
+        <plugin>
+            <groupId>io.takari</groupId>
+            <artifactId>maven-wrapper-plugin</artifactId>
+            <version>0.5.6</version>
+        </plugin>
 		</plugins>
 	</build>
 
