@@ -1,12 +1,20 @@
+# Use official Java 17 base image
 FROM eclipse-temurin:17-jdk
 
-ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
-
+# Set working directory in container
 WORKDIR /app
 
-COPY target/*.jar app.jar
+# Copy project files into container
+COPY . .
 
+# Make the Maven wrapper executable
+RUN chmod +x ./mvnw
+
+# Build the Spring Boot application
+RUN ./mvnw clean package -DskipTests
+
+# Expose the application port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Start the application
+CMD ["java", "-jar", "target/*.jar"]
