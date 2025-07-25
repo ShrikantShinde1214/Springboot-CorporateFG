@@ -1,20 +1,27 @@
-# Use official Java 17 base image
-FROM eclipse-temurin:17-jdk
+# ===== Stage 1: Build the app =====
+FROM eclipse-temurin:17-jdk AS build
 
-# Set working directory in container
 WORKDIR /app
 
-# Copy project files into container
+# Copy all project files
 COPY . .
 
-# Make the Maven wrapper executable
+# Make Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Build the Spring Boot application
+# Build the application (skip tests to speed it up)
 RUN ./mvnw clean package -DskipTests
 
-# Expose the application port
+# ===== Stage 2: Run the app =====
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+# Copy only the JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port
 EXPOSE 8080
 
-# Start the application
-CMD ["java", "-jar", "target/*.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
