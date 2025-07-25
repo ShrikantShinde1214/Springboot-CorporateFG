@@ -30,8 +30,9 @@ public class FeeSchedulerService {
     }
 
 //    @Scheduled(fixedRate = 60000) // Every 1 minute
-    @Scheduled(fixedDelay = 60000) // Waits 1 minute after the previous task finishes
-    public void sendWeeklyFeeDetails() throws Exception {
+    //@Scheduled(fixedDelay = 60000) // Waits 1 minute after the previous task finishes
+    @Scheduled(cron = "0 0 19 ? * MON", zone = "Asia/Kolkata")
+   public void sendWeeklyFeeDetails() throws Exception {
         List<Student> students = studentRepo.findAll();
         float epsilon = 0.01f;
 
