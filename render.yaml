@@ -4,15 +4,12 @@ services:
     runtime: docker
     plan: free
     envVars:
-      # Database Configuration
       - key: SPRING_DATASOURCE_URL
         value: jdbc:mysql://sql8.freesqldatabase.com:3306/sql8791710
       - key: SPRING_DATASOURCE_USERNAME
         value: sql8791710
       - key: SPRING_DATASOURCE_PASSWORD
         value: t5zNq47H5H
-
-      # Gmail SMTP Configuration
       - key: SPRING_MAIL_USERNAME
         value: future.growing.infotech@gmail.com
       - key: SPRING_MAIL_PASSWORD
