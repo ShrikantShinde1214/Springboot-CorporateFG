@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error - FG Infotech</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ffe6e6, #ffffff);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .error-box {
+            background-color: #fff0f0;
+            border: 1px solid #ff4d4d;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .error-box h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #cc0000;
+        }
+
+        .error-box p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            background-color: #cc0000;
+            color: #fff;
+            padding: 10px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background-color: #990000;
+        }
+
+        .emoji {
+            font-size: 3em;
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <div class="emoji">🚨😓</div>
+        <h2>Oops! Something went wrong 😕</h2>
+        <p th:text="'💬 Error Message: ' + ${message}"></p>
+        <a class="home-btn" href="/">🏠 Go to Home</a>
+    </div>
+	
+	<!-- Auto Logout Script -->
+		<script>
+			function resetTimer() {
+				clearTimeout(timer);
+
+				// Optional: keep session alive on user activity
+				fetch('/keepAlive', { method: 'POST' });
+
+				timer = setTimeout(() => {
+					fetch('/autoLogout', { method: 'POST' }).then(() => {
+						window.location.href = "/?sessionExpired=true";
+					});
+				}, 300000);
+			}
+
+		</script>
+		<!-- Auto Logout End -->
+</body>
+</html>

@@ -1,0 +1,123 @@
+package com.shri.main.controller;
+
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import com.shri.main.dao.StudentDao;
+import com.shri.main.model.Student;
+
+@Controller
+public class StudentController {
+	static Logger logger = LoggerFactory.getLogger(StudentController.class);
+	@Autowired
+	private StudentDao stdDao;
+
+	@Value("${app.name}")
+	private String appName;
+	@Value("${app.version}")
+	private String appVersion;
+
+	@GetMapping("/version")
+	@ResponseBody
+	public String getAppDetails() {
+		return "Application Name: " + appName + " - " + "Application Version: " + appVersion;
+	}
+
+	@GetMapping("/")
+	public String loginPage() {
+		return "login";
+	}
+
+	@GetMapping({ "/showStudents", "/list" })
+	public ModelAndView showStudents() {
+		ModelAndView modelAndView = new ModelAndView("list-students");
+		List<Student> list = stdDao.findAll();
+		logger.info(list.size() + "list data from showStudents Api......");
+		int listSize = list.size();
+		if (listSize <= 0) {
+			logger.warn("No Data Present in table.");
+
+		}
+		modelAndView.addObject("students", list);
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
+		String formattedDateTime = currentDateTime.format(formatter);
+		modelAndView.addObject("currentDateTime", formattedDateTime);
+		return modelAndView;
+	}
+
+	@GetMapping("/addStudentForm")
+	public ModelAndView addStudentForm() {
+		ModelAndView modelAndView = new ModelAndView("add-student-form");
+		Student newStudent = new Student();
+		modelAndView.addObject("student", newStudent);
+		return modelAndView;
+	}
+
+	@PostMapping("/saveStudent")
+	public String saveStudent(@ModelAttribute Student student) {
+		stdDao.save(student);
+		logger.info("Record saved successfully.!");
+		return "redirect:/list";
+	}
+
+//	@GetMapping("/showUpdateForm")
+//	public ModelAndView showUpdateForm(@RequestParam Long studentId) {
+//		ModelAndView modelAndView = new ModelAndView("UpdateStudent");
+//		Student studentdata = stdDao.findById(studentId).get();
+//		modelAndView.addObject("student", studentdata);
+//		logger.info("Record updated successfully.!");
+//		return modelAndView;
+//	}
+	
+	@GetMapping("/showUpdateForm")
+	public ModelAndView showUpdateForm(@RequestParam Long studentId) {
+	    ModelAndView modelAndView = new ModelAndView("UpdateStudent");
+	    
+	    Student studentdata = stdDao.findById(studentId).orElse(null);
+	    
+	    if (studentdata != null) {
+	        // Log current flag values
+	        logger.info("Opening update form for student: {}", studentdata.getName());
+	        logger.info("Welcome Mail Sent: {}", studentdata.isWelcomeMailSent());
+	        logger.info("Certificate Sent: {}", studentdata.isCertificateSent());
+	        logger.info("Birthday Wish Sent: {}", studentdata.isBirthdayWishSent());
+
+	        modelAndView.addObject("student", studentdata);
+	    } else {
+	        logger.warn("Student with ID {} not found!", studentId);
+	        modelAndView.addObject("student", new Student()); // send empty object to avoid Thymeleaf error
+	    }
+
+	    return modelAndView;
+	}
+
+
+	@GetMapping("/ShowStudentSecureData")
+	public ModelAndView ShowStudentSecureData(@RequestParam Long studentId) {
+		ModelAndView modelAndView = new ModelAndView("ShowStudentSecureData");
+		Student studentdata = stdDao.findById(studentId).get();
+		modelAndView.addObject("student", studentdata);
+		logger.info("Record Viewed successfully.!");
+		return modelAndView;
+	}
+
+	@GetMapping("/deleteStudent")
+	public String deleteStudent(@RequestParam Long studentId) {
+		stdDao.deleteById(studentId);
+		logger.info("Record deleted successfully.!");
+		return "redirect:/list";
+	}
+
+}

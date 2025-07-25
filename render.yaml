@@ -1,10 +1,17 @@
 services:
   - type: web
     name: springboot-app
-    env: java
+    runtime: docker
     plan: free
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/*.jar
     envVars:
-      - key: JAVA_VERSION
-        value: 17
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://sql8.freesqldatabase.com:3306/sql8791710
+      - key: SPRING_DATASOURCE_USERNAME
+        value: sql8791710
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: t5zNq47H5H
+
+      - key: SPRING_MAIL_USERNAME
+        value: future.growing.infotech@gmail.com
+      - key: SPRING_MAIL_PASSWORD
+        value: ricfjwwtudqazxjf
