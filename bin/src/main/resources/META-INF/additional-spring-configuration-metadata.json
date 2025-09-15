@@ -1,0 +1,42 @@
+{"properties": [
+  {
+    "name": "app.name",
+    "type": "java.lang.String",
+    "description": "A description for 'app.name'"
+  },
+  {
+    "name": "app.version",
+    "type": "java.lang.String",
+    "description": "A description for 'app.version'"
+  },
+  {
+    "name": "app.name",
+    "type": "java.lang.String",
+    "description": "A description for 'app.name'"
+  },
+  {
+    "name": "app.version",
+    "type": "java.lang.String",
+    "description": "A description for 'app.version'"
+  },
+  {
+    "name": "gupshup.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'gupshup.api.key'"
+  },
+  {
+    "name": "gupshup.sender.id",
+    "type": "java.lang.String",
+    "description": "A description for 'gupshup.sender.id'"
+  },
+  {
+    "name": "gupshup.app.name",
+    "type": "java.lang.String",
+    "description": "A description for 'gupshup.app.name'"
+  },
+  {
+    "name": "gupshup.whatsapp.number",
+    "type": "java.lang.String",
+    "description": "A description for 'gupshup.whatsapp.number'"
+  }
+]}

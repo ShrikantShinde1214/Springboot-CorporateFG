@@ -1,0 +1,372 @@
+package com.shri.main.service;
+
+import com.shri.main.dao.StudentDao;
+import com.shri.main.model.Student;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+public class FeeSchedulerService {
+
+    @Autowired
+    private StudentDao studentRepo;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private PdfGeneratorService pdfGeneratorService;
+    @Autowired
+    CertificateGenerator certificateGenerator;
+ 
+    @PostConstruct
+    public void sendOnceOnStartup() throws Exception {
+        sendWeeklyFeeDetails();
+    }
+
+//    @Scheduled(fixedRate = 60000) // Every 1 minute
+    @Scheduled(fixedDelay = 60000) // Waits 1 minute after the previous task finishes
+    public void sendWeeklyFeeDetails() throws Exception {
+        List<Student> students = studentRepo.findAll();
+        float epsilon = 0.01f;
+
+        for (Student student : students) {
+
+            // Send welcome email only once
+            checkAndSendWelcomeEmailIfNew(student);
+
+
+            //Course completion certificate check
+            if (!student.isCertificateSent()) {
+                sendCourseCompletionCertificate(student);
+                continue;
+            }
+
+            // Send scholarship welcome email
+            if (student.getPaidFees() == 1 && !student.isScolarshipFullFeesMailSent()) {
+                sendScholarshipWelcomeEmail(student);
+                student.setScolarshipFullFeesMailSent(true);
+                studentRepo.save(student);
+                continue;
+            }
+
+            // Send placement email once
+            if (student.isPlaced() && !student.isPlacementMailSent()) {
+                sendPlacementEmail(student);
+                student.setPlacementMailSent(true);
+                studentRepo.save(student);
+                //continue; // Skip other mails
+            }
+
+            //Send full fees PDF receipt
+            boolean isFullyPaid = Math.abs(student.getTotalFees() - 45000.0f) < epsilon &&
+                                  Math.abs(student.getPaidFees() - 45000.0f) < epsilon;
+
+            if (isFullyPaid && !student.isFullFeesMailSent()) {
+                String subject = "FG Infotech - Fees Fully Paid & Receipt Attached";
+                String htmlBody = """
+                        <html><body>
+                        <p>Welcome, <strong>%s</strong>,</p>
+                        <p style="color:green;">
+                        Congratulations! 🎉<br>
+                        Your total fees have been successfully paid.<br>
+                        Please find your official fee receipt attached in PDF format.<br><br>
+                        For queries, call us at <strong>9511200293</strong>.
+                        </p>
+                        <br><br>
+                        Thanks & Regards,<br>
+                        <strong>FG Infotech</strong><br>
+                        Website: <a href='https://fginfotech.in'>fginfotech.in</a>
+                        </body></html>
+                        """.formatted(student.getName());
+
+                byte[] pdf = pdfGeneratorService.generateFeesReceiptPdf(student);
+
+                emailService.sendEmailWithAttachment(
+                        student.getEmail(),
+                        subject,
+                        htmlBody,
+                        "FeesReceipt_" + student.getName() + ".pdf",
+                        pdf
+                );
+
+                student.setFullFeesMailSent(true);
+                studentRepo.save(student);
+                continue;
+            }
+
+            //Skip reminder if fees paid or scholarship
+            if (student.getPaidFees() >= student.getTotalFees() || student.getPaidFees() == 1) continue;
+
+            // Skip if reminder already sent 3 times
+            if (student.getReminderEmailCount() >= 3) continue;
+
+            // Send fees reminder
+            String subject = "FG Infotech Fees Details:";
+            String body = generateHtmlBody(student);
+            emailService.sendEmail(student.getEmail(), subject, body);
+
+            // Increment reminder count
+            student.setReminderEmailCount(student.getReminderEmailCount() + 1);
+            studentRepo.save(student);
+        }
+    }
+
+    private void checkAndSendWelcomeEmailIfNew(Student student) {
+        if (student.getId() != 0 && !student.isWelcomeMailSent()) {
+            sendWelcomeEmail(student);
+            student.setWelcomeMailSent(true);
+            studentRepo.save(student);
+        }
+    }
+
+    private void sendWelcomeEmail(Student student) {
+        String subject = "Welcome to FG Infotech - Your Journey Begins!";
+        String htmlBody = """
+                <html>
+                <body style="font-family: Arial, sans-serif;">
+                    <div style="border:1px solid #ddd; border-radius:10px; padding:20px; max-width:600px; margin:auto;">
+                        <h2 style="color:green;">Welcome to FG Infotech, %s!</h2>
+                        <p>We're excited to have you join us. Here are your admission details:</p>
+
+                        <table border="1" cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%%;">
+                            <tr><th align="left">Full Name</th><td>%s</td></tr>
+                            <tr><th align="left">Batch No</th><td>%s</td></tr>
+                            <tr><th align="left">Date of Admission</th><td>%s</td></tr>
+                        </table>
+
+                        <br>
+                        <p>If you have any questions, contact us at <strong>9511200293</strong>.</p>
+
+                        <p>
+                            Thanks & Regards,<br>
+                            <strong>FG Infotech</strong><br>
+                            <a href='https://fginfotech.in'>fginfotech.in</a><br><br>
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(
+                student.getName(),
+                student.getName(),
+                student.getBatchNo(),
+                new SimpleDateFormat("dd MMM yyyy").format(student.getAdmissionDate())
+        );
+
+        emailService.sendEmail(student.getEmail(), subject, htmlBody);
+    }
+
+    private void sendScholarshipWelcomeEmail(Student student) {
+        String subject = "🎓 Welcome to FG Infotech - Scholarship Confirmation!";
+
+        String htmlBody = """
+            <html>
+            <body style="font-family: Arial, sans-serif;">
+                <div style="border:1px solid #ddd; border-radius:10px; padding:20px; max-width:600px; margin:auto;">
+                    <h2 style="color:#1e88e5;">Hello %s, Welcome to FG Infotech!</h2>
+
+                    <p>Congratulations! You have been granted a full scholarship at FG Infotech. 🎉</p>
+
+                    <p>Here are your enrollment details:</p>
+
+                    <table border="1" cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%%;">
+                        <tr><th align="left">Full Name</th><td>%s</td></tr>
+                        <tr><th align="left">Batch No</th><td>%s</td></tr>
+                        <tr><th align="left">Date of Admission</th><td>%s</td></tr>
+                        <tr><th align="left">Total Fees</th><td><b>₹%d</b></td></tr>
+                        <tr><th align="left">Scholarship Received</th><td><b>Full Scholarship (₹%d)</b></td></tr>
+                        <tr><th align="left">Pending Fees</th><td><b>₹0</b></td></tr>
+                    </table>
+
+                    <br>
+                    <p>If you have any questions, feel free to reach us at <strong>9511200293</strong>.</p>
+
+                    <p>
+                        Thanks & Regards,<br>
+                        <strong>FG Infotech</strong><br>
+                        <a href='https://fginfotech.in'>https://fginfotech.in</a>
+                    </p>
+                </div>
+            </body>
+            </html>
+            """.formatted(
+            student.getName(),
+            student.getName(),
+            student.getBatchNo(),
+            new SimpleDateFormat("dd MMM yyyy").format(student.getAdmissionDate()),
+            (int) student.getTotalFees(),
+            (int) student.getTotalFees()
+        );
+
+        emailService.sendEmail(student.getEmail(), subject, htmlBody);
+    }
+
+    private void sendPlacementEmail(Student student) {
+        String subject = "🎉 Congratulations on Your Placement - FG Infotech";
+        String htmlBody = """
+            <html>
+            <body style="font-family: Arial, sans-serif;">
+                <div style="border:1px solid #ddd; border-radius:10px; padding:20px; max-width:600px; margin:auto;">
+                    <h2 style="color:green;">Congratulations %s!</h2>
+                    <p>We are thrilled to inform you that you have been successfully placed.</p>
+
+                    <table border="1" cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%%;">
+                        <tr><th align="left">Full Name</th><td>%s</td></tr>
+                        <tr><th align="left">Batch No</th><td>%s</td></tr>
+                        <tr><th align="left">Date of Admission</th><td>%s</td></tr>
+                        <tr><th align="left">Pending Fees</th><td style="color:red;">₹%.2f</td></tr>
+                        <tr><th align="left">Status</th><td style="color:green;"><b>Placed ✅</b></td></tr>
+                    </table>
+
+                    <br>
+                    <p>If you have any questions, feel free to contact us at <strong>9511200293</strong>.</p>
+
+                    <p>
+                        Thanks & Regards,<br>
+                        <strong>FG Infotech Placement Team</strong><br>
+                        <a href='https://fginfotech.in'>fginfotech.in</a>
+                    </p>
+                </div>
+            </body>
+            </html>
+            """.formatted(
+            student.getName(), // h2
+            student.getName(), // Full Name
+            student.getBatchNo(), // Batch No
+            new SimpleDateFormat("dd MMM yyyy").format(student.getAdmissionDate()), // Date
+            (student.getTotalFees() - student.getPaidFees()) // Pending Fees (double)
+        );
+
+        emailService.sendEmail(student.getEmail(), subject, htmlBody);
+    }
+    
+  
+//    public void sendCourseCompletionCertificate(Student student) throws Exception {
+//        if (student.isCertificateSent()) {
+//            System.out.println("✅ Certificate already sent to: " + student.getEmail());
+//            return;
+//        }
+//
+//        // Generate PDF as byte[] instead of file path
+//        byte[] certificateBytes = certificateGenerator.generateCertificate(student);
+//
+//        String subject = "🎓 Course Completion Certificate - FG Infotech";
+//        String body = String.format("""
+//                Dear %s,
+//
+//                Congratulations on successfully completing your course at FG Infotech!
+//
+//                Attached is your official Course Completion Certificate.
+//
+//                Thanks & Regards,
+//                FG Infotech Team
+//                """, student.getName());
+//
+//        // Send email with in-memory PDF
+//        emailService.sendEmailWithAttachmentBytes(
+//                student.getEmail(),
+//                subject,
+//                body,
+//                certificateBytes,
+//                "Course_Completion_Certificate_" + student.getId() + ".pdf"
+//        );
+//
+//        // Mark certificate as sent
+//        student.setCertificateSent(true);
+//        studentRepo.save(student);
+//    }
+//
+//   
+    
+    public void sendCourseCompletionCertificate(Student student) throws Exception {
+        // Check if already sent
+        if (student.isCertificateSent()) {
+            System.out.println("✅ Certificate already sent to: " + student.getEmail());
+            return;
+        }
+
+     // Convert java.sql.Date to LocalDate
+        LocalDate admissionDate = student.getAdmissionDate().toLocalDate();
+
+        // Current date
+        LocalDate currentDate = LocalDate.now();
+
+        // Add 5 months to admission date
+        LocalDate eligibleDate = admissionDate.plusMonths(5);
+
+        if (currentDate.isBefore(eligibleDate)) {
+            System.out.println("⚠️ Certificate not eligible yet. Will be eligible after: " + eligibleDate);
+            return;
+        }
+
+        // Generate PDF
+        byte[] certificateBytes = certificateGenerator.generateCertificate(student);
+
+        String subject = "🎓 Course Completion Certificate - FG Infotech";
+      
+        String body = String.format("""
+                Dear %s,
+
+                Congratulations on successfully completing your course at FG Infotech!
+
+                Attached is your official Course Completion Certificate.
+
+                Thanks & Regards,
+                FG Infotech Team.
+                Website: https://fginfotech.in
+                """, student.getName());
+
+
+        // Send email
+        emailService.sendEmailWithAttachmentBytes(
+                student.getEmail(),
+                subject,
+                body,
+                certificateBytes,
+                "Course_Completion_Certificate_" + student.getId() + ".pdf"
+        );
+
+        // Update status
+        student.setCertificateSent(true);
+        studentRepo.save(student);
+    }
+
+    private String generateHtmlBody(Student student) {
+        return """
+                <html>
+                <body>
+                   <p>Welcome, <strong>%s</strong>,</p>
+                   <p>
+                    Please find your fee details below and kindly pay your pending fees.
+                    For further information, feel free to contact us at <strong>9511200293</strong>.
+                   </p>
+                   <table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse;'>
+                       <tr>
+                           <th>Total Fees</th>
+                           <th>Received Fees</th>
+                           <th>Pending Fees</th>
+                       </tr>
+                       <tr>
+                           <td>%.2f</td>
+                           <td>%.2f</td>
+                           <td>%.2f</td>
+                       </tr>
+                   </table>
+                   <br><br>
+                   Thanks & Regards,<br>
+                   <strong>FG Infotech</strong><br>
+                   <a href='https://fginfotech.in'>fginfotech.in</a>
+                </body>
+                </html>
+                """.formatted(student.getName(),
+                (double) student.getTotalFees(),
+                (double) student.getPaidFees(),
+                (double) (student.getTotalFees() - student.getPaidFees()));
+    }
+   
+}

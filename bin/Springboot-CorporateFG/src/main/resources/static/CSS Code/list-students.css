@@ -1,0 +1,145 @@
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+
+.icon-button {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	color: #fff;
+	font-size: 18px;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	margin-right: 8px;
+}
+
+.icon-button i {
+	pointer-events: none;
+}
+
+.add-student {
+	background-color: #28a745;
+}
+
+.add-student:hover {
+	background-color: #218838;
+	transform: scale(1.1);
+}
+
+.logout {
+	background-color: #dc3545;
+}
+
+.logout:hover {
+	background-color: #c82333;
+	transform: scale(1.1);
+}
+
+.icon-container {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	margin-bottom: 5px;
+}
+
+#notificationCount.show {
+	display: inline-block !important;
+}
+
+.icon-action {
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	color: #fff;
+	font-size: 18px;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+	margin-right: 5px;
+}
+
+.icon-action:hover {
+	transform: scale(1.15) rotate(5deg);
+}
+
+/* Specific Button Colors */
+.view-icon {
+	background: linear-gradient(135deg, #ffc107, #ffb300);
+}
+
+.view-icon:hover {
+	background: linear-gradient(135deg, #ffca28, #ffa000);
+}
+
+.update-icon {
+	background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.update-icon:hover {
+	background: linear-gradient(135deg, #1ab3cc, #117a8b);
+}
+
+.delete-icon {
+	background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.delete-icon:hover {
+	background: linear-gradient(135deg, #e4606d, #bd2130);
+}
+
+.profile-container {
+	position: relative;
+	float: right;
+	margin-top: 2px;
+}
+
+.profile-image:hover+.hover-box {
+	display: block;
+}
+
+.hover-box {
+	display: none;
+	position: absolute;
+	top: 55px;
+	right: 0;
+	background-color: #fff;
+	color: #333;
+	border: 1px solid #ccc;
+	padding: 6px 10px;
+	border-radius: 6px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	font-size: 14px;
+	white-space: nowrap;
+	z-index: 1000;
+}
+
+.disabled-link {
+	pointer-events: none;
+	cursor: not-allowed;
+}
+
+.icon-button:hover {
+	background-color: #0056b3 !important;
+}
+
+#demo {
+	padding-left: 40px;
+	padding-right: 40px;
+	padding-top: 2px;
+}

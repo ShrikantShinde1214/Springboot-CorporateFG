@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: springboot-app
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+<<<<<<< HEAD
+        value: jdbc:postgresql://dpg-d2m610f5r7bs73ecq9tg-a.oregon-postgres.render.com:5432/corporatefg_99n4
+      - key: SPRING_DATASOURCE_USERNAME
+        value: corporatefg_99n4_user
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: csAJcVyRvmRrU8ct9Uqtjzl2LlxkC5GX
+=======
+        value: jdbc:postgresql://ep-long-frost-a1tcw454-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: npg_4swNU5RiQIaM
+>>>>>>> 8e36f906150296c4c01735ee631e0252f928074c
+      - key: SPRING_MAIL_USERNAME
+        value: future.growing.infotech@gmail.com
+      - key: SPRING_MAIL_PASSWORD
+        value: ricfjwwtudqazxjf
