@@ -40,17 +40,8 @@ public class AdminLoginController {
     @PostMapping("/login")
     public String login(@RequestParam String username,
                         @RequestParam String password,
-                        @RequestParam String captcha,        
-                        @RequestParam String captchaHidden,
                         Model model,
                         HttpSession session) {
-
-        // Validate captcha first
-        if (captcha == null || !captcha.equals(captchaHidden)) {
-            model.addAttribute("error", "Invalid Captcha.");
-            return "login"; // return to login page
-        }
-
         // Continue with login logic
         Optional<Admin> userOpt = adminRepo.findByUsername(username);
         if (userOpt.isEmpty() || !Argon2PasswordUtil.verifyPassword(password, userOpt.get().getPassword())) {
