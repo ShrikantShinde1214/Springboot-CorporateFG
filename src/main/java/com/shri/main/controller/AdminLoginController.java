@@ -110,7 +110,7 @@ public class AdminLoginController {
         session.removeAttribute("otpTime");
         session.setAttribute("user", admin); // mark as logged in
 
-        return "dashboard";
+      return "redirect:/dashboard";
     }
 
     @GetMapping("/verify-otp")
