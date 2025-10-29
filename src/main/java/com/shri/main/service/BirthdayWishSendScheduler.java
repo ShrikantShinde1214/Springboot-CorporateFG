@@ -85,45 +85,49 @@ public class BirthdayWishSendScheduler {
     }
 
     //Send admin birthday wish once per year
-    public void sendBirthdayWishesToAdmins() {
-        LocalDate today = LocalDate.now();
-        List<Admin> admins = adminRepository.findAll();
-        logger.info("🔍 Checking {} admins for birthday wishes.", admins.size());
+   @Scheduled(cron = "0 1 0 * * *") // Run every day at 12:01 AM
+public void sendBirthdayWishesToAdmins() {
+    LocalDate today = LocalDate.now();
+    LocalDate tomorrow = today.plusDays(1);
 
-        for (Admin admin : admins) {
-            LocalDate dob = admin.getDob();
+    List<Admin> admins = adminRepository.findAll();
+    logger.info("🔍 Checking {} admins for upcoming birthdays (tomorrow).", admins.size());
 
-            if (dob != null &&
-                dob.getDayOfMonth() == today.getDayOfMonth() &&
-                dob.getMonth() == today.getMonth() &&
-                (admin.getLastBirthdayWishedAt() == null || admin.getLastBirthdayWishedAt().getYear() < today.getYear())
-            ) {
-                String name = admin.getUsername() != null ? admin.getUsername() : admin.getLoginId();
-                logger.info("🎂 Sending birthday wish to admin: {}", name);
-                System.out.println("✅ Sending admin birthday wish to: " + name);
+    for (Admin admin : admins) {
+        LocalDate dob = admin.getDob();
 
-                String msg =
-                        "🎉 Happy Birthday, " + name + "! 🎂\n\n" +
-                        "On this special day, we celebrate **you** — not just as an incredible partner, but as a visionary leader and an inspiring force behind FG Infotech's journey. 🚀\n\n" +
-                        "May this new chapter bring you greater heights of success, endless happiness, and moments you’ll cherish forever.\n\n" +
-                        "**Let’s keep building dreams together.** 💼✨\n\n" +
-                        "With warmest wishes,\n" +
-                        "— Your FG Infotech Family 💙\n" +
-                        "🌐 www.fginfotech.in";
+        if (dob != null &&
+            dob.getDayOfMonth() == tomorrow.getDayOfMonth() &&
+            dob.getMonth() == tomorrow.getMonth() &&
+            (admin.getLastBirthdayWishedAt() == null || admin.getLastBirthdayWishedAt().getYear() < today.getYear())
+        ) {
+            String name = admin.getUsername() != null ? admin.getUsername() : admin.getLoginId();
+            logger.info("🎂 Sending early birthday wish to admin: {}", name);
+            System.out.println("✅ Sending early birthday wish to: " + name);
 
-                emailService.sendAdminBirthdayMail(
-                        admin.getEmail(),
-                        "🎉 Happy Birthday to Our Rockstar Partner!",
-                        msg
-                );
+            String msg =
+                    "🎉 Happy Birthday (in advance), " + name + "! 🎂\n\n" +
+                    "We couldn’t wait until tomorrow to celebrate you — an incredible partner and leader of FG Infotech. 🚀\n\n" +
+                    "May the year ahead bring you happiness, health, and continued success.\n\n" +
+                    "**Let’s keep building dreams together.** 💼✨\n\n" +
+                    "With warmest wishes,\n" +
+                    "— Your FG Infotech Family 💙\n" +
+                    "🌐 www.fginfotech.in";
 
-                admin.setLastBirthdayWishedAt(today);
-                adminRepository.save(admin);
+            emailService.sendAdminBirthdayMail(
+                    admin.getEmail(),
+                    "🎉 Early Birthday Wishes from FG Infotech!",
+                    msg
+            );
 
-                logger.info("✅ Birthday wish sent and saved for admin: {}", admin.getEmail());
-            } else {
-                logger.info("⏩ Skipping admin (not birthday or already wished this year): {}", admin.getLoginId());
-            }
+            admin.setLastBirthdayWishedAt(today);
+            adminRepository.save(admin);
+
+            logger.info("✅ Early birthday wish sent and saved for admin: {}", admin.getEmail());
+        } else {
+            logger.info("⏩ Skipping admin (no upcoming birthday tomorrow): {}", admin.getLoginId());
         }
     }
+}
+
 }
