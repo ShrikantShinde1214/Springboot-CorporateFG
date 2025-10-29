@@ -85,49 +85,45 @@ public class BirthdayWishSendScheduler {
     }
 
     //Send admin birthday wish once per year
-   @Scheduled(cron = "0 1 0 * * *") // Run every day at 12:01 AM
+@Scheduled(cron = "0 0 7 * * *", zone = "Asia/Kolkata") // Runs every day at 7:00 AM IST
 public void sendBirthdayWishesToAdmins() {
     LocalDate today = LocalDate.now();
-    LocalDate tomorrow = today.plusDays(1);
-
     List<Admin> admins = adminRepository.findAll();
-    logger.info("🔍 Checking {} admins for upcoming birthdays (tomorrow).", admins.size());
+    logger.info("🔍 Checking {} admins for birthday wishes.", admins.size());
 
     for (Admin admin : admins) {
         LocalDate dob = admin.getDob();
 
         if (dob != null &&
-            dob.getDayOfMonth() == tomorrow.getDayOfMonth() &&
-            dob.getMonth() == tomorrow.getMonth() &&
+            dob.getDayOfMonth() == today.getDayOfMonth() &&
+            dob.getMonth() == today.getMonth() &&
             (admin.getLastBirthdayWishedAt() == null || admin.getLastBirthdayWishedAt().getYear() < today.getYear())
         ) {
             String name = admin.getUsername() != null ? admin.getUsername() : admin.getLoginId();
-            logger.info("🎂 Sending early birthday wish to admin: {}", name);
-            System.out.println("✅ Sending early birthday wish to: " + name);
+            logger.info("🎂 Sending birthday wish to admin: {}", name);
 
             String msg =
-                    "🎉 Happy Birthday (in advance), " + name + "! 🎂\n\n" +
-                    "We couldn’t wait until tomorrow to celebrate you — an incredible partner and leader of FG Infotech. 🚀\n\n" +
-                    "May the year ahead bring you happiness, health, and continued success.\n\n" +
-                    "**Let’s keep building dreams together.** 💼✨\n\n" +
-                    "With warmest wishes,\n" +
+                    "🎉 Happy Birthday, " + name + "! 🎂\n\n" +
+                    "Wishing you a day filled with joy, success, and smiles — you’re a true inspiration to all of us at FG Infotech. 🚀\n\n" +
+                    "May your year ahead be full of great achievements and happiness.\n\n" +
+                    "**Keep shining and inspiring us!** 💼✨\n\n" +
+                    "With warm wishes,\n" +
                     "— Your FG Infotech Family 💙\n" +
                     "🌐 www.fginfotech.in";
 
             emailService.sendAdminBirthdayMail(
                     admin.getEmail(),
-                    "🎉 Early Birthday Wishes from FG Infotech!",
+                    "🎉 Happy Birthday from FG Infotech!",
                     msg
             );
 
             admin.setLastBirthdayWishedAt(today);
             adminRepository.save(admin);
 
-            logger.info("✅ Early birthday wish sent and saved for admin: {}", admin.getEmail());
+            logger.info("✅ Birthday wish sent and saved for admin: {}", admin.getEmail());
         } else {
-            logger.info("⏩ Skipping admin (no upcoming birthday tomorrow): {}", admin.getLoginId());
+            logger.info("⏩ Skipping admin (not birthday or already wished this year): {}", admin.getLoginId());
         }
     }
 }
-
 }
